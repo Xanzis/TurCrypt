@@ -53,12 +53,12 @@ def encrypt(string, pwd, mastr):
 	code = [hex(pwd * 3)[2:], '.', hex(rslt[1] * 7)[2:], '.', rslt[2]]
 	code = ''.join(code)
 	print(" ")
-	finpwd = masterPass(code, mastr)
+	finpwd = EmasterPass(code, mastr)
 	for i in range(len(eInfo)):
 		eInfo[i] = unhexlify(hex(int(eInfo[i], 2))[2:].zfill(2))
 	return ''.join(eInfo), finpwd
 
-def masterPass(dataOne, mstr):
+def EmasterPass(dataOne, mstr):
 	locOrd = []
 	i=0
 	dataOne = str(int(hexlify(dataOne), 16))

@@ -58,7 +58,7 @@ def decrypt(pwd, string, outLoc):
 		print("Output appended to " + outLoc)
 
 
-def masterPass(encData, mstr):
+def DmasterPass(encData, mstr):
 	dataOne = ''
 	nCode = str(int(hexlify(b64decode(encData)),16))
 	locOrd = range(len(nCode))
@@ -78,7 +78,7 @@ def main():
 	startTime = time.time()
 	file, findata = pickle.load(open(args.infile, 'rb'))
 	print findata
-	code = masterPass(findata, args.password)
+	code = DmasterPass(findata, args.password)
 	decrypt(code, file, args.output)	
 	print str(time.time() - startTime) + " Seconds for Operation"
 
