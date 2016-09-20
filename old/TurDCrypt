@@ -1,0 +1,75 @@
+#! /usr/bin/python
+import argparse
+import random
+from binascii import hexlify, unhexlify
+from base64 import b64encode, b64decode
+from copy import copy
+import pickle
+import sys
+import time
+
+def parse_arguments():
+	parser = argparse.ArgumentParser(description="Xander's magic decryptifier.")
+	parser.add_argument("infile", metavar="I", type=str, help="Input file")
+	parser.add_argument("data", metavar="D", type=str, help="Machine Data")
+	parser.add_argument("password", metavar="P", type=str, help="Master Password")
+	return parser.parse_args()
+
+def unTuring(t, st, pl, n):
+	tp = copy(t)
+	for x in range(n):
+		pl -= 1
+		if pl == -1:
+			pl += len(tp)
+		if st == '1' and tp[pl] == '1':
+			st = '0'
+		elif st == '1' and tp[pl] == '0':
+			tp[pl] = '1'
+		elif st == '0' and tp[pl] == '1':
+			st = '1'
+			tp[pl] = '0'
+		print('.'.rjust((60 * x) / n))
+		sys.stdout.write("\033[F")
+	tp = ''.join(tp)
+	return [tp[i:i+7].zfill(8) for i in range(0, len(tp), 7)]
+
+def decrypt(pwd, string):
+	pwd = pwd.split('.')
+	iters = int(pwd[0], 16) / 3
+	p = int(pwd[1], 16) / 7
+	s = pwd[2]
+	dat = ''
+	for char in string:
+		dat += bin(int(hexlify(char), 16))[2:].zfill(7)
+	unEnc = unTuring(list(dat), s, p, iters)
+	for i in range(len(unEnc)):
+		unEnc[i] = unhexlify(hex(int(unEnc[i], 2))[2:].zfill(2))
+	print("Done! Message Follows: ")
+	print ''.join(unEnc)
+
+def masterPass(encData, mstr):
+	dataOne = ''
+	nCode = str(int(hexlify(b64decode(encData)),16))
+	locOrd = range(len(nCode))
+	random.seed(mstr)
+	random.shuffle(locOrd)
+	shift = random.randint(0, 10)
+	code = ''
+	for i in range(len(locOrd)):
+		code += nCode[locOrd.index(i)]
+	for char in code:
+		dataOne += str((int(char) - shift) % 10)
+	h = hex(int(dataOne))[2:-1]
+	return unhexlify(h.zfill(len(h)+(len(h)%2)))
+
+def main():
+	args = parse_arguments()
+	startTime = time.time()
+	code = masterPass(args.data, args.password)
+	decrypt(code, pickle.load(open(args.infile, 'rb')))	
+	print str(time.time() - startTime) + " Seconds for Operation"
+
+if __name__ == "__main__":
+	main()
+
+
